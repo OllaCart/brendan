@@ -1,0 +1,230 @@
+ss<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Rate Sheet Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #rateSheet {
+            width: 100%;
+            height: 600px;
+        }
+    </style>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Interest Rate Sheet Generator</h1>
+        <div class="form-group">
+            <label for="reserves">Select Reserves:</label>
+            <select id="reserves">
+                <option value="2">> 2 months</option>
+                <option value="4">> 4 months</option>
+                <option value="6">> 6 months</option>
+                <option value="12">> 12 months</option>
+                <option value="36">> 36 months</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="program">Select Loan Program:</label>
+            <select id="program">
+                <option value="USDA">USDA</option>
+                <option value="Conventional">Conventional</option>
+                <option value="DSCR">DSCR</option>
+                <option value="fixAndFlip">Fix and Flip</option>
+                <option value="VA">VA</option>
+                <option value="FHA">FHA</option>
+                <option value="Commercial">Commercial</option>
+            </select>
+        </div>
+        <button id="generateRateSheet">Generate Rate Sheet</button>
+        <button id="minorAdjustments">Apply Minor Adjustments</button>
+        <button id="majorAdjustments">Apply Major Adjustments</button>
+        <div id="rateSheet"></div>
+    </div>
+
+    <script>
+        const staticBaseRate = 4.359;
+
+        const margins = {
+            borrowerPaid: 1.5,
+            lenderPaid: 2.5,
+            fifteenYear: .85,
+        };
+
+        const loanPrograms = {
+            USDA: 0.1,
+            Conventional: 0.2,
+            DSCR: 0.3,
+            fixAndFlip: 0.4,
+            refinance: 0.1,
+            VA: 0.10,
+            FHA: 0.05,
+            Commercial: 0.35
+        };
+
+        const creditScoreRanges = [800, 780, 760, 740, 720, 700, 680, 660, 640, 620, 600];
+        const ltvRanges = [45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 96.5, 97, 100];
+        const reservesRanges = [2, 4, 6, 12, 36];
+
+        const creditScoreAdjustments = (creditScore) => {
+            if (creditScore >= 800) return 0;
+            if (creditScore >= 780) return 0.05;
+            if (creditScore >= 760) return 0.075;
+            if (creditScore >= 740) return 0.125;
+            if (creditScore >= 720) return 0.175;
+            if (creditScore >= 700) return 0.225;
+            if (creditScore >= 680) return 0.25;
+            if (creditScore >= 660) return 0.375;
+            if (creditScore >= 640) return 0.4125;
+            if (creditScore >= 600) return 0.5;
+            return 1.25;
+        };
+
+        const ltvAdjustments = (ltv) => {
+            if (ltv <= 45) return 0;
+            if (ltv <= 50) return 0.05;
+            if (ltv <= 55) return 0.075;
+            if (ltv <= 60) return 0.1;
+            if (ltv <= 65) return 0.125;
+            if (ltv <= 70) return 0.15;
+            if (ltv <= 75) return 0.120;
+            if (ltv <= 80) return 0.15;
+            if (ltv <= 85) return 0.175;
+            if (ltv <= 90) return 0.20;
+            if (ltv <= 95) return 0.225;
+            if (ltv <= 96.5) return 0.250;
+            if (ltv <= 97) return 0.275;
+            if (ltv <= 100) return 0.3;
+            return 0;
+        };
+        const reservesAdjustments = (reserves) => {
+            if (reserves >1 && reserves < 3) return 0.4;
+            if (reserves < 5 && reserves > 2) return 0.3;
+            if (reserves < 8 && reserves > 3) return 0.2;
+            if (reserves < 12 && reserves > 7) return 0.1;
+            if (reserves < 37 && reserves > 13) return -0.1;
+            return 0;
+        };
+
+        let rateSheet = {};
+
+        function generateRateSheet() {
+            const baseRate = staticBaseRate;
+            rateSheet = {};
+
+            for (const program in loanPrograms) {
+                rateSheet[program] = {};
+
+                for (const scenario in margins) {
+                    const margin = margins[scenario];
+                    const programAdjustment = loanPrograms[program];
+                    rateSheet[program][scenario] = {};
+
+                    creditScoreRanges.forEach((creditScore) => {
+                        rateSheet[program][scenario][creditScore] = {};
+
+                        ltvRanges.forEach((ltv) => {
+                            rateSheet[program][scenario][creditScore][ltv] = {};
+
+                            reservesRanges.forEach((reserves) => {
+                                const creditAdjustment = creditScoreAdjustments(creditScore);
+                                const ltvAdjustment = ltvAdjustments(ltv);
+                                const reservesAdjustment = reservesAdjustments(reserves);
+
+                                let rate = baseRate + margin + programAdjustment + creditAdjustment + ltvAdjustment + reservesAdjustment;
+                                rateSheet[program][scenario][creditScore][ltv][reserves] = rate.toFixed(3);
+                            });
+                        });
+                    });
+                }
+            }
+
+            displayRateSheet(rateSheet);
+        }
+
+        function applyAdjustments(adjustment) {
+            for (const program in rateSheet) {
+                for (const scenario in rateSheet[program]) {
+                    for (const creditScore in rateSheet[program][scenario]) {
+                        for (const ltv in rateSheet[program][scenario][creditScore]) {
+                            for (const reserves in rateSheet[program][scenario][creditScore][ltv]) {
+                                rateSheet[program][scenario][creditScore][ltv][reserves] =
+                                    (parseFloat(rateSheet[program][scenario][creditScore][ltv][reserves]) + adjustment).toFixed(3);
+                            }
+                        }
+                    }
+                }
+            }
+
+            displayRateSheet(rateSheet);
+        }
+
+        function displayRateSheet(rateSheet) {
+            const reserves = document.getElementById('reserves').value;
+            const program = document.getElementById('program').value;
+            const rateSheetDiv = document.getElementById('rateSheet');
+            rateSheetDiv.innerHTML = '';
+
+            const data = [];
+            const x = ltvRanges;
+            const y = creditScoreRanges;
+
+            for (const scenario in rateSheet[program]) {
+                const z = y.map(score => x.map(ltv => parseFloat(rateSheet[program][scenario][score][ltv][reserves])));
+
+                data.push({
+                    type: 'surface',
+                    x: x,
+                    y: y,
+                    z: z,
+                    name: scenario,
+                    hovertemplate: '<b>LTV:</b> %{x}<br><b>Credit Score:</b> %{y}<br><b>Rate:</b> %{z}<extra></extra>',
+                    showscale: true,
+                    colorbar: {
+                        title: 'Rate'
+                    }
+                });
+            }
+
+            const layout = {
+                title: `${program} Rate Sheet`,
+                scene: {
+                    xaxis: { title: 'LTV (%)' },
+                    yaxis: { title: 'Credit Score' },
+                    zaxis: { title: 'Rate' }
+                },
+                margin: { l: 0, r: 0, b: 0, t: 50 }
+            };
+
+            Plotly.newPlot('rateSheet', data, layout);
+        }
+
+        document.getElementById('generateRateSheet').addEventListener('click', generateRateSheet);
+        document.getElementById('minorAdjustments').addEventListener('click', () => applyAdjustments(0.125));
+        document.getElementById('majorAdjustments').addEventListener('click', () => applyAdjustments(0.25));
+    </script>
+</body>
+</html>

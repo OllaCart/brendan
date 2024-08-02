@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Purchase Contract Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        #contractOutput {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real Estate Purchase Contract Generator</h1>
+
+        <!-- Buyer Section -->
+        <div class="section" id="buyerSection">
+            <h2>Buyer Information</h2>
+            <form id="buyerForm">
+                <div class="form-group">
+                    <label for="buyerName">Buyer Name:</label>
+                    <input type="text" id="buyerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="propertyAddress">Property Address:</label>
+                    <input type="text" id="propertyAddress" required>
+                </div>
+                <div class="form-group">
+                    <label for="purchasePrice">Purchase Price:</label>
+                    <input type="number" id="purchasePrice" required>
+                </div>
+                <div class="form-group">
+                    <label for="closingDate">Closing Date:</label>
+                    <input type="date" id="closingDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="offerType">Offer Type:</label>
+                    <select id="offerType" required>
+                        <option value="cash">Cash</option>
+                        <option value="financed">Financed</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="loanProgramGroup">
+                    <label for="loanProgram">Loan Program:</label>
+                    <select id="loanProgram">
+                        <option value="conventional">Conventional</option>
+                        <option value="fha">FHA</option>
+                        <option value="va">VA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="propertyType">Property Type:</label>
+                    <select id="propertyType" required>
+                        <option value="residential">Residential</option>
+                        <option value="commercial">Commercial</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="state">State:</label>
+                    <select id="state" required>
+                        <option value="CA">California</option>
+                        <option value="TX">Texas</option>
+                        <option value="NY">New York</option>
+                        <!-- Add more states as needed -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contingencies">Contingencies:</label>
+                    <select id="contingencies" required>
+                        <option value="inspection">Inspection</option>
+                        <option value="financing">Financing</option>
+                        <option value="appraisal">Appraisal</option>
+                    </select>
+                </div>
+                <button type="submit">Create Contract</button>
+            </form>
+        </div>
+
+        <!-- Agent Section -->
+        <div class="section hidden" id="agentSection">
+            <h2>Agent Information</h2>
+            <form id="agentForm">
+                <div class="form-group">
+                    <label for="disclosures">Seller's Disclosures:</label>
+                    <textarea id="disclosures" rows="4" required></textarea>
+                </div>
+                <button type="submit">Add Disclosures</button>
+            </form>
+        </div>
+
+        <!-- Seller Section -->
+        <div class="section hidden" id="sellerSection">
+            <h2>Seller Review</h2>
+            <div id="contractOutput"></div>
+            <button id="approveContract">Approve Contract</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('offerType').addEventListener('change', function() {
+            const loanProgramGroup = document.getElementById('loanProgramGroup');
+            if (this.value === 'financed') {
+                loanProgramGroup.classList.remove('hidden');
+            } else {
+                loanProgramGroup.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('buyerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const buyerName = document.getElementById('buyerName').value;
+            const propertyAddress = document.getElementById('propertyAddress').value;
+            const purchasePrice = document.getElementById('purchasePrice').value;
+            const closingDate = document.getElementById('closingDate').value;
+            const offerType = document.getElementById('offerType').value;
+            const loanProgram = offerType === 'financed' ? document.getElementById('loanProgram').value : '';
+            const propertyType = document.getElementById('propertyType').value;
+            const state = document.getElementById('state').value;
+            const contingencies = document.getElementById('contingencies').value;
+
+            let contractText = `
+                <h2>Real Estate Purchase Contract</h2>
+                <p>This Real Estate Purchase Contract ("Contract") is made and entered into by and between ${buyerName} ("Buyer").</p>
+                <h3>1. Property</h3>
+                <p>Buyer agrees to buy the real property located at ${propertyAddress} ("Property").</p>
+                <h3>2. Purchase Price</h3>
+                <p>The total purchase price for the Property is $${purchasePrice} ("Purchase Price").</p>
+                <h3>3. Closing Date</h3>
+                <p>The closing date for this transaction shall be on ${closingDate} ("Closing Date").</p>
+                <h3>4. Type of Offer</h3>
+                <p>The type of offer is ${offerType}.</p>
+            `;
+
+            if (offerType === 'financed') {
+                contractText += `
+                    <h3>5. Loan Program</h3>
+                    <p>The loan program selected for this purchase is ${loanProgram}.</p>
+                `;
+            }
+
+            if (propertyType === 'residential') {
+                contractText += `<p>This is a residential property.</p>`;
+            } else if (propertyType === 'commercial') {
+                contractText += `<p>This is a commercial property.</p>`;
+            }
+
+            if (state === 'CA') {
+                contractText += `<p>This contract is governed by California law.</p>`;
+            } else if (state === 'TX') {
+                contractText += `<p>This contract is governed by Texas law.</p>`;
+            } else if (state === 'NY') {
+                contractText += `<p>This contract is governed by New York law.</p>`;
+            }
+
+            if (contingencies === 'inspection') {
+                contractText += `<p>This contract is contingent upon a satisfactory inspection.</p>`;
+            } else if (contingencies === 'financing') {
+                contractText += `<p>This contract is contingent upon financing approval.</p>`;
+            } else if (contingencies === 'appraisal') {
+                contractText += `<p>This contract is contingent upon a satisfactory appraisal.</p>`;
+            }
+
+            document.getElementById('contractOutput').innerHTML = contractText;
+            document.getElementById('buyerSection').classList.add('hidden');
+            document.getElementById('agentSection').classList.remove('hidden');
+        });
+
+        document.getElementById('agentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const disclosures = document.getElementById('disclosures').value;
+            let contractText = document.getElementById('contractOutput').innerHTML;
+            contractText += `
+                <h3>6. Seller's Disclosures</h3>
+                <p>${disclosures}</p>
+            `;
+
+            document.getElementById('contractOutput').innerHTML = contractText;
+            document.getElementById('agentSection').classList.add('hidden');
+            document.getElementById('sellerSection').classList.remove('hidden');
+        });
+
+        document.getElementById('approveContract').addEventListener('click', function() {
+            alert('Contract approved by the seller.');
+        });
+    </script>
+</body>
+</html>

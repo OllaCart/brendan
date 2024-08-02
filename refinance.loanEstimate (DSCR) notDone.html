@@ -1,0 +1,511 @@
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Cost Calculator</title>
+</head>
+<body>
+  <header>
+    <h1>Investor DSCR Mortgage Loan Closing Disclosure Estimator</h1>
+  </header>
+
+  <form id="closingDisclosureForm">
+    <label for="purchasePrice">Purchase Price:</label>
+    <input type="number" id="purchasePrice" name="purchasePrice">
+    <br></br>
+    <label for="zipCode">Zip Code:</label>
+    <input type="number" id="zipCode" name="zipCode">
+    <br></br>
+    <label for="creditScore">Credit Score:</label>
+    <input type="number" id="creditScore" name="creditScore">
+    <br></br>
+    <label for="hoaFees">Monthly HOA Fees/Condo Fees:</label>
+    <input type="text" id="hoaFees" name="hoaFees">
+    <br></br>
+    <label for="commission">Buyers Agent Commission on Listing:</label>
+    <input type="text" id="commission" name="commission">
+    <br></br>
+    <label for="downPayment">Down Payment:</label>
+    <input type="number" id="downPayment" name="downPayment">
+    <br></br>
+    <label for="rent">Projected Rent:</label>
+    <input type="number" id="rent" name="rent">
+    <br></br>
+    <label for="interestRate">Interest Rate:</label>
+    <input type="text" id="interestRate" name="interestRate">
+    <br></br>
+    <button type="submit">Calculate</button>
+  </form>
+  <div id="results" style="display: none;">
+    <pre id="closingDisclosure"></pre>
+  </div>
+  <script>
+
+  function calculateClosingDisclosure(purchasePrice, zipCode, creditScore, hoaFees, commission, downPayment, rent, interestRate) {
+    const taxFactor = calculateTaxFactor(zipCode);
+    const transferTaxFactor = calculateTransferTaxFactor(zipCode);
+
+    //change on user input on account page
+    const numberOfPayments = 360;
+    const loanTerm = 30;
+    const loanAmount = (purchasePrice - downPayment);
+
+    // constant fees
+    const countyRecordingFees = 250;
+    const stateRecordingFees = 150;
+    const titleTitleSearchBase = 250;
+    const recordingDeedBase = 75;
+    const appraisalFeeBase = 550;
+    const underwritingFee = 1295;
+    const applicationFeeBase = 995;
+    const recordingTitle = 75;
+    const recordingMortgage = 75;
+    const surveyFee = 250;
+    const pestInspectionFee = 145;
+    const rentalIncomeReportFee = 185;
+    const floodMonitoringFee = 25;
+    const floodDeterminationFee = 35;
+    const creditReportFeeBase = 150;
+    const processingFeeBase = 795;
+    const titleSettlementAgentFee = 350;
+    const earnestMoneyDeposit = 1000;
+    const insuranceBinder = 150;
+    const initialEscrowMortgageInsurance = 0;
+    const prepaidsPropertyTaxes = -100;//this is a credit from the buyer
+
+    function calculateTaxFactor(zipcode) {
+      let taxFactor = 1; // Default tax factor
+
+      if (zipcode >= 35000 && zipcode <= 36999) {
+        taxFactor = 0.41;
+      } else if (zipcode >= 99500 && zipcode <= 99999) {
+        taxFactor = 1.19;
+      } else if (zipcode >= 85000 && zipcode <= 86999) {
+        taxFactor = .64;
+      } else if (zipcode >= 71600 && zipcode <= 72999) {
+        taxFactor = .63;
+      } else if (zipcode >= 90000 && zipcode <= 96699) {
+        taxFactor = .75;
+      } else if (zipcode >= 80000 && zipcode <= 81999) {
+        taxFactor = .54;
+      } else if ((zipcode >= 6000 && zipcode <= 6389) || (zipcode >= 6391 && zipcode <= 6999)) {
+        taxFactor = 1.63;
+      } else if (zipcode >= 19700 && zipcode <= 19999) {
+        taxFactor = .53;
+      } else if (zipcode >= 32000 && zipcode <= 34999) {
+        taxFactor = .89;
+      } else if ( (zipcode >= 30000 && zipcode <= 31999) || (zipcode >= 39800 && zipcode <= 39999) ) {
+        taxFactor = .91
+      } else if (zipcode >= 96700 && zipcode <= 96999) {
+        taxFactor = .29;
+      } else if (zipcode >= 83200 && zipcode <= 83999 && zipcode != 83414) {
+        taxFactor = .76;
+      } else if (zipcode >= 60000 && zipcode <= 62999) {
+        taxFactor = 2.3;
+      } else if (zipcode >= 46000 && zipcode <= 47999) {
+        taxFactor = .87;
+      } else if (zipcode >= 50000 && zipcode <= 52999) {
+        taxFactor = 1.53;
+      } else if (zipcode >= 66000 && zipcode <= 67999) {
+        taxFactor = 1.4;
+      } else if (zipcode >= 40000 && zipcode <= 42999) {
+        taxFactor = .84;
+      } else if (zipcode >= 70000 && zipcode <= 71599) {
+        taxFactor = .51;
+      } else if (zipcode >= 3900 && zipcode <= 4999) {
+        taxFactor = 1.3;
+      } else if (zipcode >= 20600 && zipcode <= 21999) {
+        taxFactor = 1.0;
+      } else if ( (zipcode >= 1000 && zipcode <= 2799) || (zipcode == 5501) || (zipcode == 5544 ) ) {
+        taxFactor = 1.16;
+      } else if (zipcode >= 48000 && zipcode <= 49999) {
+        taxFactor = 1.53;
+      } else if (zipcode >= 55000 && zipcode <= 56899) {
+        taxFactor = 1.05;
+      } else if (zipcode >= 38600 && zipcode <= 39999) {
+        taxFactor = .62;
+      } else if (zipcode >= 63000 && zipcode <= 65999) {
+        taxFactor = 1.02;
+      } else if (zipcode >= 59000 && zipcode <= 59999) {
+        taxFactor = .68;
+      } else if (zipcode >= 27000 && zipcode <= 28999) {
+        taxFactor = .86;
+      } else if (zipcode >= 58000 && zipcode <= 58999) {
+        taxFactor = 1.01;
+      } else if (zipcode >= 68000 && zipcode <= 69999) {
+        taxFactor = 1.77;
+      } else if (zipcode >= 88900 && zipcode <= 89999) {
+        taxFactor = .7;
+      } else if (zipcode >= 3000 && zipcode <= 3899) {
+        taxFactor = 2.20;
+      } else if (zipcode >= 7000 && zipcode <= 8999) {
+        taxFactor = 2.44;
+      } else if (zipcode >= 87000 && zipcode <= 88499) {
+        taxFactor = .67;
+      } else if ( (zipcode >= 10000 && zipcode <= 14999) || (zipcode == 6390) || (zipcode == 501) || (zipcode == 544) ) {
+        taxFactor = 1.58;
+      } else if (zipcode >= 43000 && zipcode <= 45999) {
+        taxFactor = 1.57;
+      } else if ((zipcode >= 73000 && zipcode <= 73199) || (zipcode >= 73400 && zipcode <= 74999) ) {
+        taxFactor = .88;
+      } else if (zipcode >= 97000 && zipcode <= 97999) {
+        taxFactor = 1.07;
+      } else if (zipcode >= 15000 && zipcode <= 19699) {
+        taxFactor = 1.55;
+      } else if (zipcode >= 300 && zipcode <= 999) {
+        taxFactor = .6;
+      } else if (zipcode >= 2800 && zipcode <= 2999) {
+        taxFactor = 1.53;
+      } else if (zipcode >= 29000 && zipcode <= 29999) {
+        taxFactor = .57;
+      } else if (zipcode >= 57000 && zipcode <= 57999) {
+        taxFactor = 1.22;
+      } else if (zipcode >= 37000 && zipcode <= 38599) {
+        taxFactor = .74;
+      } else if ( (zipcode >= 75000 && zipcode <= 79999) || (zipcode >= 73301 && zipcode <= 73399) ||  (zipcode >= 88500 && zipcode <= 88599) ) {
+        taxFactor = 1.81;
+      } else if (zipcode >= 84000 && zipcode <= 84999) {
+        taxFactor = .63;
+      } else if (zipcode >= 5000 && zipcode <= 5999) {
+        taxFactor = 1.78;
+      } else if ( (zipcode >= 20100 && zipcode <= 20199) || (zipcode >= 22000 && zipcode <= 24699) || (zipcode == 20598) ) {
+        taxFactor = .8;
+      } else if ( (zipcode >= 20000 && zipcode <= 20099) || (zipcode >= 20200 && zipcode <= 20599) || (zipcode >= 56900 && zipcode <= 56999) ) {
+        taxFactor = .85;
+      } else if (zipcode >= 98000 && zipcode <= 99499) {
+        taxFactor = 1.06;
+      } else if (zipcode >= 24700 && zipcode <= 26999) {
+        taxFactor = .59;
+      } else if (zipcode >= 53000 && zipcode <= 54999) {
+        taxFactor = 1.68;
+      } else if ( (zipcode >= 82000 && zipcode <= 83199) || zipcode == 83414 ) {
+        taxFactor = .61;
+      }
+      return taxFactor;
+    }
+    function calculateTransferTaxFactor(zipcode) {
+      let transferTaxFactor = 1; // Default tax factor
+
+      if (zipcode >= 35000 && zipcode <= 36999) {
+        transferTaxFactor = 0.001; // Alabama
+      } else if (zipcode >= 99500 && zipcode <= 99999) {
+        transferTaxFactor = 0; // Alaska
+      } else if (zipcode >= 85000 && zipcode <= 86999) {
+        transferTaxFactor = 0.004; // Arizona
+      } else if (zipcode >= 71600 && zipcode <= 72999) {
+        transferTaxFactor = 0.0033; // Arkansas
+      } else if (zipcode >= 90000 && zipcode <= 96699) {
+        transferTaxFactor = 0.007; // California
+      } else if (zipcode >= 80000 && zipcode <= 81999) {
+        transferTaxFactor = 0.002; // Colorado
+      } else if ((zipcode >= 6000 && zipcode <= 6389) || (zipcode >= 6391 && zipcode <= 6999)) {
+        transferTaxFactor = 0.00635; // Connecticut
+      } else if (zipcode >= 19700 && zipcode <= 19999) {
+        transferTaxFactor = 0.00425; // Delaware
+      } else if (zipcode >= 32000 && zipcode <= 34999) {
+        transferTaxFactor = 0.007; // Florida
+      } else if ((zipcode >= 30000 && zipcode <= 31999) || (zipcode >= 39800 && zipcode <= 39999)) {
+        transferTaxFactor = 0.001; // Georgia
+      } else if (zipcode >= 96700 && zipcode <= 96999) {
+        transferTaxFactor = 0.0017; // Hawaii
+      } else if (zipcode >= 83200 && zipcode <= 83999 && zipcode != 83414) {
+        transferTaxFactor = 0.002; // Idaho
+      } else if (zipcode >= 60000 && zipcode <= 62999) {
+        transferTaxFactor = 0.0025; // Illinois
+      } else if (zipcode >= 46000 && zipcode <= 47999) {
+        transferTaxFactor = 0.002; // Indiana
+      } else if (zipcode >= 50000 && zipcode <= 52999) {
+        transferTaxFactor = 0.00185; // Iowa
+      } else if (zipcode >= 66000 && zipcode <= 67999) {
+        transferTaxFactor = 0.00333; // Kansas
+      } else if (zipcode >= 40000 && zipcode <= 42999) {
+        transferTaxFactor = 0.00145; // Kentucky
+      } else if (zipcode >= 70000 && zipcode <= 71599) {
+        transferTaxFactor = 0.005; // Louisiana
+      } else if (zipcode >= 3900 && zipcode <= 4999) {
+        transferTaxFactor = 0.014; // Maine
+      } else if (zipcode >= 20600 && zipcode <= 21999) {
+        transferTaxFactor = 0.011; // Maryland
+      } else if (zipcode >= 1000 && zipcode <= 2799) {
+        transferTaxFactor = 0.0023; // Massachusetts
+      } else if (zipcode >= 48000 && zipcode <= 49999) {
+        transferTaxFactor = 0.006; // Michigan
+      } else if (zipcode >= 55000 && zipcode <= 56899) {
+        transferTaxFactor = 0.0034; // Minnesota
+      } else if (zipcode >= 38600 && zipcode <= 39999) {
+        transferTaxFactor = 0.003; // Mississippi
+      } else if (zipcode >= 63000 && zipcode <= 65999) {
+        transferTaxFactor = 0.00133; // Missouri
+      } else if (zipcode >= 59000 && zipcode <= 59999) {
+        transferTaxFactor = 0.007; // Montana
+      } else if (zipcode >= 27000 && zipcode <= 28999) {
+        transferTaxFactor = 0.002; // North Carolina
+      } else if (zipcode >= 58000 && zipcode <= 58999) {
+        transferTaxFactor = 0.002; // North Dakota
+      } else if (zipcode >= 68000 && zipcode <= 69999) {
+        transferTaxFactor = 0.0025; // Nebraska
+      } else if (zipcode >= 88900 && zipcode <= 89999) {
+        transferTaxFactor = 0.0071; // Nevada
+      } else if (zipcode >= 3000 && zipcode <= 3899) {
+        transferTaxFactor = 0.014; // New Hampshire
+      } else if (zipcode >= 7000 && zipcode <= 8999) {
+        transferTaxFactor = 0.0045; // New Jersey
+      } else if (zipcode >= 87000 && zipcode <= 88499) {
+        transferTaxFactor = 0.011; // New Mexico
+      } else if ((zipcode >= 10000 && zipcode <= 14999) || zipcode == 6390 || zipcode == 501 || zipcode == 544) {
+        transferTaxFactor = 0.0043; // New York
+      } else if (zipcode >= 43000 && zipcode <= 45999) {
+        transferTaxFactor = 0.00195; // Ohio
+      } else if ((zipcode >= 73000 && zipcode <= 73199) || (zipcode >= 73400 && zipcode <= 74999)) {
+        transferTaxFactor = 0.003; // Oklahoma
+      } else if (zipcode >= 97000 && zipcode <= 97999) {
+        transferTaxFactor = 0.0115; // Oregon
+      } else if (zipcode >= 15000 && zipcode <= 19699) {
+        transferTaxFactor = 0.01; // Pennsylvania
+      } else if (zipcode >= 300 && zipcode <= 999) {
+        transferTaxFactor = 0.0057; // Puerto Rico
+      } else if (zipcode >= 2800 && zipcode <= 2999) {
+        transferTaxFactor = 0.0042; // Rhode Island
+      } else if (zipcode >= 29000 && zipcode <= 29999) {
+        transferTaxFactor = 0.00325; // South Carolina
+      } else if (zipcode >= 57000 && zipcode <= 57999) {
+        transferTaxFactor = 0.002; // South Dakota
+      } else if (zipcode >= 37000 && zipcode <= 38599) {
+        transferTaxFactor = 0.0375; // Tennessee
+      } else if ((zipcode >= 75000 && zipcode <= 79999) || (zipcode >= 73301 && zipcode <= 73399) || (zipcode >= 88500 && zipcode <= 88599)) {
+        transferTaxFactor = 0.015; // Texas
+      } else if (zipcode >= 84000 && zipcode <= 84999) {
+        transferTaxFactor = 0.00765; // Utah
+      } else if (zipcode >= 5000 && zipcode <= 5999) {
+        transferTaxFactor = 0.01; // Vermont
+      } else if ((zipcode >= 20100 && zipcode <= 20199) || (zipcode >= 22000 && zipcode <= 24699) || zipcode == 20598) {
+        transferTaxFactor = 0.01; // Virginia
+      } else if ((zipcode >= 20000 && zipcode <= 20099) || (zipcode >= 20200 && zipcode <= 20599) || (zipcode >= 56900 && zipcode <= 56999)) {
+        transferTaxFactor = 0.00456; // Washington DC
+      } else if (zipcode >= 98000 && zipcode <= 99499) {
+        transferTaxFactor = 0.01; // Washington
+      } else if (zipcode >= 24700 && zipcode <= 26999) {
+        transferTaxFactor = 0.00655; // West Virginia
+      } else if (zipcode >= 53000 && zipcode <= 54999) {
+        transferTaxFactor = 0.003; // Wisconsin
+      } else if ((zipcode >= 82000 && zipcode <= 83199) || zipcode == 83414) {
+        transferTaxFactor = 0.01; // Wyoming
+      }
+      return transferTaxFactor;
+    }
+
+    // factored calculations
+    const annualPropertyTax = parseFloat(purchasePrice) * parseFloat(taxFactor) / 100;
+    //UNFACTORED CALCULATIONS, NEED TO FIGURE OUT HOW TO INCLUDE CREDIT AND STATE FACTORS
+    const optionalOwnersTitleInsuranceBase = (purchasePrice * 0.00575).toFixed(2); //State, Credit
+    const recordingTransferTaxBase = (purchasePrice * 0.01).toFixed(2);; //State dependent.
+
+    const monthlyHomeownersInsurance = ((purchasePrice * 0.01035) / 12).toFixed(2);
+    const monthlyPropertyTaxes = (parseFloat((annualPropertyTax) / 12)).toFixed(2);
+    const prepaidsHomeownersInsurance = (purchasePrice * 0.01035).toFixed(2);
+    const titleLendersTitleInsuranceBase =  (purchasePrice * 0.0045).toFixed(2);
+    const homeInspectionFeeBase =  (purchasePrice * 0.0035).toFixed(2);
+    const initialEscrowTaxes= (monthlyPropertyTaxes * 6).toFixed(2);//
+    const initialEscrowHOI = (((purchasePrice * .01) / 12) * 3).toFixed(2);
+    const estimatedEscrow = (parseFloat(monthlyHomeownersInsurance) + parseFloat(monthlyPropertyTaxes)).toFixed(2);
+
+    //these aren't going to change, they are determined
+    const dailyInterestRate = interestRate / 365 / 100; // Convert annual rate to daily decimal
+    const prepaidInterest = (loanAmount * dailyInterestRate * 15).toFixed(2); // Return the result rounded to 2 decimal places
+    const monthlyInterestRate = interestRate / 12 / 100; // Convert annual rate to monthly decimal
+    const principalAndInterest = (loanAmount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, numberOfPayments)) / (Math.pow(1 + monthlyInterestRate, numberOfPayments) - 1)).toFixed(2);
+    const piti = parseFloat(principalAndInterest) + parseFloat(estimatedEscrow);
+    const transferTaxes = purchasePrice * transferTaxFactor;
+    const cleanPayment = piti.toFixed(2);
+    const cashFlow = parseFloat(rent) - parseFloat(cleanPayment) - parseFloat(hoaFees);
+    const dscr = parseFloat(rent) / (piti + parseFloat(hoaFees));
+    const lenderCredits = (parseFloat(loanAmount) * .01).toFixed(2);
+    const otherCosts = parseFloat(optionalOwnersTitleInsuranceBase) + parseFloat(lenderCredits) + parseFloat(pestInspectionFee) + parseFloat(initialEscrowTaxes) + parseFloat(prepaidsPropertyTaxes) + parseFloat(prepaidInterest) + parseFloat(prepaidsHomeownersInsurance) + parseFloat(stateRecordingFees) + parseFloat(countyRecordingFees) + parseFloat(recordingMortgage) + parseFloat(recordingTitle) + parseFloat(recordingDeedBase) + parseFloat(transferTaxes);
+    const costTotals = parseFloat(insuranceBinder) + parseFloat(rentalIncomeReportFee)+ parseFloat(titleTitleSearchBase) + parseFloat(titleLendersTitleInsuranceBase) + parseFloat(surveyFee) + parseFloat(titleSettlementAgentFee) + parseFloat(floodDeterminationFee) + parseFloat(floodMonitoringFee) + parseFloat(creditReportFeeBase) + parseFloat(appraisalFeeBase) + parseFloat(applicationFeeBase) + parseFloat(underwritingFee) + parseFloat(processingFeeBase) + parseFloat(creditReportFeeBase) + parseFloat(lenderCredits);
+    const closingCosts = parseFloat(otherCosts) + parseFloat(costTotals);
+    const cashToClose = parseFloat(closingCosts) + parseFloat(downPayment) + parseFloat(earnestMoneyDeposit);
+    const cashOutsideClosing = parseFloat(appraisalFeeBase) + parseFloat(rentalIncomeReportFee) + parseFloat(earnestMoneyDeposit) + parseFloat(homeInspectionFeeBase);
+    const unbeatableCredit = parseFloat(purchasePrice) * commission;//this is where we put the buyers agent commission
+    const unbeatableDeal = parseFloat(cashToClose) - parseFloat(unbeatableCredit);
+
+    // Perform calculations using the provided purchase price and constants
+    // Prepare the closing disclosure object
+    const closingDisclosure = {
+      cleanPayment,
+      purchasePrice,
+      cashOutsideClosing,
+      downPayment,
+      loanAmount,
+      interestRate,
+      processingFeeBase,
+      principalAndInterest,
+      homeInspectionFeeBase,
+      loanTerm,
+      optionalOwnersTitleInsuranceBase,
+      hoaFees,
+      earnestMoneyDeposit,
+      piti,
+      estimatedEscrow,
+      monthlyPropertyTaxes,
+      monthlyHomeownersInsurance,
+      prepaidsHomeownersInsurance,
+      prepaidsPropertyTaxes,
+      prepaidInterest,
+      titleSettlementAgentFee,
+      titleLendersTitleInsuranceBase,
+      titleTitleSearchBase,
+      insuranceBinder,
+      recordingDeedBase,
+      appraisalFeeBase,
+      underwritingFee,
+      applicationFeeBase,
+      pestInspectionFee,
+      floodMonitoringFee,
+      floodDeterminationFee,
+      creditReportFeeBase,
+      recordingTitle,
+      recordingMortgage,
+      countyRecordingFees,
+      stateRecordingFees,
+      surveyFee,
+      initialEscrowTaxes,
+      initialEscrowMortgageInsurance,
+      initialEscrowHOI,
+      rentalIncomeReportFee,
+      lenderCredits,
+      costTotals,
+      rent,
+      otherCosts,
+      closingCosts,
+      cashToClose,
+      unbeatableDeal,
+      dscr,
+      cashFlow,
+      transferTaxes
+    };
+    return closingDisclosure;
+  }
+  document.getElementById('closingDisclosureForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    // Retrieve the purchase price and zip code from the form
+    const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+    const downPayment = parseFloat(document.getElementById('downPayment').value);
+    const interestRate = parseFloat(document.getElementById('interestRate').value);
+    const zipCode = document.getElementById('zipCode').value;
+    const hoaFees = parseFloat(document.getElementById('hoaFees').value);
+    const commissionPercent= parseFloat(document.getElementById('commission').value);
+    const rent = parseFloat(document.getElementById('rent').value);
+    const commission = commissionPercent / 100;
+    // Call the function to calculate the closing disclosure
+    const closingDisclosure = calculateClosingDisclosure(purchasePrice, zipCode, creditScore, hoaFees, commission, downPayment, rent, interestRate);
+
+    // Generate HTML for the closing disclosure
+    const closingDisclosureHTML = `
+    <h1>Closing Disclosure:</h1>
+
+    <section class="loanTerms"><h2>Loan Terms</h2><table>
+
+    <tr><td>Loan Amount:</td><td>$${closingDisclosure.loanAmount}</td></tr>
+    <tr><td>Interest Rate:</td><td>${closingDisclosure.interestRate}%</td></tr>
+    <tr><td>Purchase Price:</td><td>$${closingDisclosure.purchasePrice}</td></tr>
+    <tr><td>Monthly Payment (PITI):</td><td>$${closingDisclosure.piti}</td></tr>
+    <tr><td>Prepayment Penalty:</td><td>No</td></tr>
+    <tr><td>Balloon Payment:</td><td>No</td></tr>
+    <tr><td>Loan Term::</td><td>${closingDisclosure.loanTerm} years</td></tr>
+    </table></section>
+
+    <section class="projectedPayments"><h2>Projected Payments</h2><table>
+    <tr><td>Total Monthly Payment:</td><td>$${closingDisclosure.cleanPayment}</td></tr>
+    <tr><td>Monthly Principal and Interest:</td><td>$${closingDisclosure.principalAndInterest}</td></tr>
+    <tr><td>Monthly Property Taxes:</td><td>$${closingDisclosure.monthlyPropertyTaxes}</td></tr>
+    <tr><td>Monthly Homeowners insurance:</td><td>$${closingDisclosure.monthlyHomeownersInsurance}</td></tr>
+    <tr><td>Estimated Escrow:</td><td>$${closingDisclosure.estimatedEscrow}</td></tr>
+    <tr><td>Monthly HOA/Condo Fees:</td><td>$${closingDisclosure.hoaFees}</td></tr>
+    </table></section>
+
+    <section class="projectedIncome"><h2>Projected Income</h2><table>
+    <tr><td>Projected Monthly Rent:</td><td>$${closingDisclosure.rent}</td></tr>
+    <tr><td>Debt Service Coverage Ratio:</td><td>${closingDisclosure.dscr}</td></tr>
+    <tr><td>Monthly Cash Flow:</td><td>$${closingDisclosure.cashFlow}</td></tr>
+    </table></section>
+
+    <section class="costsAtClosing"><h2>Costs at Closing</h2><table>
+    <tr><td>Estimated Costs prior to Closing:</td><td>$${closingDisclosure.cashOutsideClosing}</td></tr>
+    <tr><td>Estimated Closing Costs:</td><td>$${closingDisclosure.closingCosts}</td></tr>
+    <tr><td>Estimated Cash to Close:</td><td>$${closingDisclosure.closingCosts + closingDisclosure.downPayment}</td></tr>
+
+    </table></section>
+
+    <section class="loanCosts"><h2>Loan Costs</h2><table>
+    <tr><strong>Origination Charges</strong></tr>
+    <tr><td>Credit Report Fee:</td><td>$${closingDisclosure.creditReportFeeBase}</td></tr>
+    <tr><td>Processing Fee:</td><td>$${closingDisclosure.processingFeeBase}</td></tr>
+    <tr><td>Underwriting Fee:</td><td>$${closingDisclosure.underwritingFee}</td>
+    <tr><td>Application Fee:</td><td>$${closingDisclosure.applicationFeeBase}</td></tr>
+    <tr><td>Lender Origination:</td><td>$${closingDisclosure.lenderCredits}</td></tr>
+    <td><strong>>Charges for Services customer cannot shop for</strong></td>
+    <tr><td>Appraisal Fee: </td><td>$${closingDisclosure.appraisalFeeBase}</td></tr>
+    <tr><td>Rental Income Report Fee:</td><td>$${closingDisclosure.rentalIncomeReportFee}</td></tr>
+    <tr><td>Credit Report Fee:</td><td>$${closingDisclosure.creditReportFeeBase}</td></tr>
+    <tr><td>Flood Monitoring Fee:</td><td>$${closingDisclosure.floodMonitoringFee}</td></tr>
+    <tr><td>Flood Determination Fee:</td><td>$${closingDisclosure.floodDeterminationFee}</td></tr>
+    <td><strong>>Charges for Services customer can shop for</strong></td>
+    <tr><td>Settlement Agent Fee:</td><td>$${closingDisclosure.titleSettlementAgentFee}</td></tr>
+    <tr><td>Survey Fee: </td><td>$${closingDisclosure.surveyFee}</td></tr>
+    <tr><td>Lenders Title Insurance:</td><td>$${closingDisclosure.titleLendersTitleInsuranceBase}</td></tr>
+    <tr><td>Title: Title Search Fee:</td><td>$${closingDisclosure.titleTitleSearchBase}</td></tr>
+    <tr><td>Title: Recording Mortgage Fee: </td><td>$${closingDisclosure.recordingMortgage}</td></tr>
+    <tr><td>Title: Insurance Binder: </td><td>$${closingDisclosure.insuranceBinder}</td></tr>
+    <td><strong>>Totals</strong></td>
+    <tr><td>Origination, Services Totals </td><td>$${closingDisclosure.costTotals}</td></tr>
+
+
+    </table></section>
+
+    <section class="otherCosts"><h2>Other Costs</h2><table>
+    <td><strong>>Taxes and other Government Fees</strong></td>
+    <tr><td>Title: Recording Deed Fee:</td><td>$${closingDisclosure.recordingDeedBase}</td></tr>
+    <tr><td>Title: Recording Title Fee:</td><td>$${closingDisclosure.recordingTitle}</td></tr>
+    <tr><td>County Recording Fees:</td><td>$${closingDisclosure.countyRecordingFees}</td></tr>
+    <tr><td>State Recording Fees:</td><td>$${closingDisclosure.stateRecordingFees}</td></tr>
+    <tr><td>Transfer Taxes:</td><td>$${closingDisclosure.transferTaxes}</td></tr>
+    <td><strong>>Prepaids</strong></td>
+    <tr><td>Homeowners Insurance Premium:</td><td>$${closingDisclosure.prepaidsHomeownersInsurance}</td></tr>
+    <tr><td>Prepaid Interest:</td><td>$${closingDisclosure.prepaidInterest}</td></tr>
+    <tr><td>Prepaid Property Taxes:</td><td>$${closingDisclosure.prepaidsPropertyTaxes}</td></tr>
+    <td><strong>>Initial Escrow Payments at Closing</strong></td>
+    <tr><td>for Homeowners Insurance (3 months):</td><td>$${closingDisclosure.initialEscrowHOI}</td></tr>
+    <tr><td>for Mortgage Insurance (0 Months):</td><td>$${closingDisclosure.initialEscrowMortgageInsurance}</td></tr>
+    <tr><td>for Property Taxes (6 months):</td><td>$${closingDisclosure.initialEscrowTaxes}</td></tr>
+    <td><strong>>Discretionary</strong></td>
+    <tr><td>Home Inspection Fee:</td><td>$${closingDisclosure.homeInspectionFeeBase}</td></tr>
+    <tr><td>Pest Inspection Fee:</td><td>$${closingDisclosure.pestInspectionFee}</td></tr>
+    <tr><td>Unbeatable Earnest Deposit:</td><td>$${closingDisclosure.earnestMoneyDeposit}</td></tr>
+    <tr><td>(Optional)Owners Title Insurance:</td><td>$${closingDisclosure.optionalOwnersTitleInsuranceBase}</td></tr>
+    <td><strong>>Total Other Costs </strong></td>
+    <tr><td>Total Discretionary, Initial Escrow, Prepaid, and Government Fees:</td><td>$${closingDisclosure.otherCosts}</td></tr>
+    <table></section>
+
+    <section class="totalClosingCosts"><h2>Subtotal Closing Costs</h2><table>
+    <tr><td>Closing Costs:</td><td>$${closingDisclosure.closingCosts}</td></tr>
+    </table></section>
+
+    <section class="calculatingCashToClose"><h2>Calculating Cash to Close</h2><table>
+    <tr><td>Down Payment:</td><td>$${closingDisclosure.downPayment}</td></tr>
+    <tr><td>Cash to Close without Unbeatable:</td><td>$${closingDisclosure.cashToClose}</td></tr><br></br>
+    <tr><td>Unbeatable Offer for Cash to Close:</td><td>$${closingDisclosure.unbeatableDeal}</td></tr>
+
+
+    </table></section>`;
+
+    // Inject the closing disclosure HTML into the results section
+    console.log('Before generating closing disclosure HTML');
+    document.getElementById('closingDisclosure').innerHTML = closingDisclosureHTML;
+    document.getElementById('results').style.display = 'block';
+    console.log('After generating closing disclosure HTML');
+
+  });
+</script>
+</body>
+</html>

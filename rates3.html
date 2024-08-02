@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interest Rate Sheet Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .rate-sheet {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interest Rate Sheet Generator</h1>
+        <button id="generateRateSheet">Generate Rate Sheet</button>
+        <button id="minorAdjustments">Apply Minor Adjustments</button>
+        <button id="majorAdjustments">Apply Major Adjustments</button>
+        <div id="rateSheet"></div>
+    </div>
+
+    <script>
+        const staticBaseRate = 4.185; // Example static base rate. we can get this from https://www.cnbc.com/quotes/US10Y
+
+        const margins = {
+            borrowerPaid: 2.0,
+            //lenderPaid: 3.0
+        };
+
+        const loanPrograms = {
+            Conventional: 0.0,
+            USDA: 0.2,
+            VA: 0.10,
+            FHA: -0.25,
+        };
+
+        const investorPrograms = {
+            Commercial: 0.35,
+            DSCR: 0.3,
+        }
+
+        const creditScoreRanges = [0, 600, 620, 640, 660, 680, 700, 720, 740, 760, 780, 800];
+        const ltvRanges = [60, 65, 70, 75, 80, 85, 90, 95, 96.5, 97, 100];
+
+        const creditScoreAdjustments = (creditScore) => {
+            if (creditScore >= 800) return 0;
+            if (creditScore >= 780) return 0.05;
+            if (creditScore >= 760) return 0.075;
+            if (creditScore >= 740) return 0.123;
+            if (creditScore >= 720) return 0.175;
+            if (creditScore >= 700) return 0.225;
+            if (creditScore >= 680) return 0.25;
+            if (creditScore >= 660) return 0.375;
+            if (creditScore >= 640) return 0.375;
+            if (creditScore >= 600) return 0.5;
+            if (creditScore >= 580) return 0.75;
+            if (creditScore >= 560) return 1.0;
+            return 1.25;
+        };
+
+        const ltvAdjustments = (ltv) => {
+            if (ltv <= 60) return 0;
+            if (ltv <= 65) return 0.025;
+            if (ltv <= 70) return 0.05;
+            if (ltv <= 75) return 0.075;
+            if (ltv <= 80) return 0.1;
+            if (ltv <= 85) return 0.125;
+            if (ltv <= 90) return 0.125;
+            if (ltv <= 95) return 0.15;
+            if (ltv <= 96.5) return 0.175;
+            if (ltv <= 97) return 0.2;
+            if (ltv <= 100) return 0.3;
+            return 0;
+        };
+
+        let rateSheet = {};
+
+        function generateRateSheet() {
+            const baseRate = staticBaseRate;
+            rateSheet = {};
+
+            for (const program in loanPrograms) {
+                rateSheet[program] = {};
+
+                for (const scenario in margins) {
+                    const margin = margins[scenario];// Get the margin for the scenario
+                    const programAdjustment = loanPrograms[program];// Get the program adjustment
+                    rateSheet[program][scenario] = {};// Initialize the rate sheet for the program and scenario
+
+                    creditScoreRanges.forEach((creditScore) => {
+                        const creditAdjustment = creditScoreAdjustments(creditScore);// Get the credit score adjustment
+                        rateSheet[program][scenario][creditScore] = {};// Initialize the rate sheet for the credit score
+
+                        ltvRanges.forEach((ltv) => {
+                            const ltvAdjustment = ltvAdjustments(ltv);// Get the LTV adjustment
+                            let rate = baseRate + margin + programAdjustment + creditAdjustment + ltvAdjustment;// Calculate the rate
+                            rateSheet[program][scenario][creditScore][ltv] = rate.toFixed(3);
+                        });
+                    });
+                }
+            }
+            for (const program in investorPrograms) {
+                rateSheet[program] = {};
+
+                for (const scenario in margins) {
+                    const margin = margins[scenario];// Get the margin for the scenario
+                    const programAdjustment = investorPrograms[program];// Get the program adjustment
+                    rateSheet[program][scenario] = {};// Initialize the rate sheet for the program and scenario
+
+                    creditScoreRanges.forEach((creditScore) => {
+                        const creditAdjustment = creditScoreAdjustments(creditScore);// Get the credit score adjustment
+                        rateSheet[program][scenario][creditScore] = {};// Initialize the rate sheet for the credit score
+
+                        ltvRanges.forEach((ltv) => {
+                            const ltvAdjustment = ltvAdjustments(ltv);// Get the LTV adjustment
+                            let rate = baseRate + margin + programAdjustment + creditAdjustment + ltvAdjustment;// Calculate the rate
+                            rateSheet[program][scenario][creditScore][ltv] = rate.toFixed(3);
+                        });
+                    });
+                }
+            }
+
+            displayRateSheet(rateSheet);
+        }
+
+        function applyAdjustments(adjustment) {
+            for (const program in rateSheet) {
+                for (const scenario in rateSheet[program]) {
+                    for (const creditScore in rateSheet[program][scenario]) {
+                        for (const ltv in rateSheet[program][scenario][creditScore]) {
+                            rateSheet[program][scenario][creditScore][ltv] = 
+                                (parseFloat(rateSheet[program][scenario][creditScore][ltv]) + adjustment).toFixed(3);// Apply the adjustment
+                        }
+                    }
+                }
+            }
+            
+
+            displayRateSheet(rateSheet);
+        }
+
+        function displayRateSheet(rateSheet) {
+            const rateSheetDiv = document.getElementById('rateSheet');
+            rateSheetDiv.innerHTML = '';
+            
+
+            for (const program in rateSheet) {
+                const programHeader = document.createElement('h3');
+                programHeader.innerText = `${program} Rate Sheets`;// Set the program header
+                rateSheetDiv.appendChild(programHeader);// Add the program header
+                rateSheetDiv.appendChild(document.createElement('hr'));// Add a horizontal rule
+
+                for (const scenario in rateSheet[program]) {
+                    // DISPLAY the type of margin 
+                    const scenarioHeader = document.createElement('h4' + scenario);
+                    scenarioHeader.innerText = `${scenario} Margin`;// Set the scenario header
+                    const table = document.createElement('table');// Create a table element
+                    const headerRow = document.createElement('tr');// Create a row element
+                    headerRow.innerHTML = '<th>Credit Score / LTV</th>' + ltvRanges.map(ltv => `<th>LTV <= ${ltv}%</th>`).join('');// Add the header row to the table
+                    table.appendChild(headerRow);
+
+                    creditScoreRanges.slice().reverse().forEach((creditScore) => { // Iterate in reverse order
+                        const row = document.createElement('tr');// Create a row element
+                        const scoreCell = document.createElement('td'); // Create a cell element
+                        scoreCell.innerText = `>= ${creditScore}`; // Set the cell text
+                        row.appendChild(scoreCell);
+
+                        for (const ltv in rateSheet[program][scenario][creditScore]) {
+                            const rateCell = document.createElement('td');// Create a cell element
+                            rateCell.innerText = rateSheet[program][scenario][creditScore][ltv];// Set the cell text
+                            row.appendChild(rateCell);
+                        }
+
+                        table.appendChild(row);
+                    });
+
+                    rateSheetDiv.appendChild(table);
+                }
+            }
+        }
+
+        document.getElementById('generateRateSheet').addEventListener('click', generateRateSheet);
+        document.getElementById('minorAdjustments').addEventListener('click', () => applyAdjustments(0.125));
+        document.getElementById('majorAdjustments').addEventListener('click', () => applyAdjustments(0.25));
+    </script>
+</body>
+</html>

@@ -48,7 +48,7 @@
     const earnestMoneyDeposit = 527.50;
     const insuranceBinder = 150;
     const lenderCredits = 0;
-    const prepaidsPropertyTaxes = -100;//this is a credit from the buyer
+    const prepaidsPropertyTaxes = -100;//this is a credit from the seller
     const floodDeterminationFee = 25;
 
 
@@ -278,15 +278,27 @@
     // factored calculations
     const annualPropertyTax = parseFloat(purchasePrice) * parseFloat(taxFactor) / 100;
     //UNFACTORED CALCULATIONS, NEED TO FIGURE OUT HOW TO INCLUDE CREDIT AND STATE FACTORS
-    const optionalOwnersTitleInsuranceBase = (purchasePrice * 0.00575).toFixed(2); //State, Credit
+    let optionalOwnersTitleInsuranceBase = (purchasePrice * 0.00575).toFixed(2); //State, Credit
     const recordingTransferTaxBase = (purchasePrice * 0.01).toFixed(2);; //State dependent.
 
-    const monthlyHomeownersInsurance = ((purchasePrice * 0.01035) / 12).toFixed(2);;
-    const monthlyPropertyTaxes = parseFloat((annualPropertyTax) / 12);
-    const prepaidsHomeownersInsurance = (purchasePrice * 0.01035).toFixed(2);
+    let homeownersInsurance = ((purchasePrice * 0.01035)).toFixed(2);;
+    const propertyTaxes = parseFloat((annualPropertyTax));
     const titleLendersTitleInsuranceBase =  (purchasePrice * 0.0045).toFixed(2);
-    const homeInspectionFeeBase =  (purchasePrice * 0.0035).toFixed(2);
-    const estimatedEscrow = parseFloat(monthlyHomeownersInsurance) + parseFloat(monthlyPropertyTaxes);
+    let homeInspectionFeeBase =  (purchasePrice * 0.0035).toFixed(2);
+
+
+    const minHomeownersInsurance = 1200;
+    const maxHomeownersInsurance = 17500; // Set your maximum value
+    homeownersInsurance = Math.max(Math.min(homeownersInsurance, maxHomeownersInsurance), minHomeownersInsurance);
+
+
+    const minownersTitleInsuranceBase = 500;
+    const maxownersTitleInsuranceBase = 10000; // Set your maximum value
+    optionalOwnersTitleInsuranceBase = Math.max(Math.min(optionalOwnersTitleInsuranceBase, maxownersTitleInsuranceBase), minownersTitleInsuranceBase);
+
+    const minInspectionFee = 500;
+    const maxInspectionFee = 3500; // Set your maximum value
+    homeInspectionFeeBase = Math.max(Math.min(homeInspectionFeeBase, maxInspectionFee), minInspectionFee);
 
 
     //these aren't going to change, they are determined 
@@ -309,9 +321,8 @@
       homeInspectionFeeBase,
       optionalOwnersTitleInsuranceBase,
       hoaFees,
-      estimatedEscrow,
-      monthlyPropertyTaxes,
-      monthlyHomeownersInsurance,
+      propertyTaxes,
+      homeownersInsurance,
       titleSettlementAgentFee,
       titleLendersTitleInsuranceBase,
       earnestMoneyDeposit,
@@ -356,9 +367,8 @@
     </table></section>
 
     <section class="projectedPayments"><h2>Projected Payments</h2><table>
-    <tr><td>Monthly Property Taxes:</td><td>$${closingDisclosure.monthlyPropertyTaxes}</td></tr>
-    <tr><td>Monthly Homeowners insurance:</td><td>$${closingDisclosure.monthlyHomeownersInsurance}</td></tr>
-    <tr><td>Estimated Escrow:</td><td>$${closingDisclosure.estimatedEscrow}</td></tr>
+    <tr><td>Annual Property Taxes:</td><td>$${closingDisclosure.propertyTaxes}</td></tr>
+    <tr><td>Annual Homeowners insurance:</td><td>$${closingDisclosure.homeownersInsurance}</td></tr>
     <tr><td>Monthly HOA/Condo Fees:</td><td>$${closingDisclosure.hoaFees}</td></tr>
     </table></section>
 
@@ -395,7 +405,7 @@
     <tr><td>Unbeatable Earnest Deposit:</td><td>$${closingDisclosure.earnestMoneyDeposit}</td></tr>
     <tr><td>(Optional)Owners Title Insurance:</td><td>$${closingDisclosure.optionalOwnersTitleInsuranceBase}</td></tr>
     <td><strong>>Total Other Costs </strong></td>
-    <tr><td>Total Discretionary, Initial Escrow, Prepaid, and Government Fees:</td><td>$${closingDisclosure.otherCosts}</td></tr>
+    <tr><td>Total Discretionary, Prepaid, and Government Fees:</td><td>$${closingDisclosure.otherCosts}</td></tr>
     <table></section>
 
     <section class="totalClosingCosts"><h2>Subtotal Closing Costs</h2><table>
